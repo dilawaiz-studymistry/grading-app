@@ -57,7 +57,6 @@ if role == "Teacher Control Panel":
         st.markdown("---")
         st.header("📊 Class Results Grid")
         
-        # Refresh button to fetch latest student entries
         if st.button("🔄 Refresh Student Submissions"):
             st.rerun()
 
@@ -111,7 +110,6 @@ else:
                 try:
                     with st.spinner("Submitting and grading answer... Please wait."):
                         client = genai.Client(api_key=global_store["api_key"])
-                        
                         student_ans_img = Image.open(ans_file)
 
                         prompt = """
@@ -126,16 +124,37 @@ else:
                         Missing Ideas/Keywords: [Concise 1-2 sentence description of missing or incorrect points]
                         """
 
-                        # Updated model name to gemini-1.5-flash
-                        response = client.models.generate_content(
-                            model='gemini-1.5-flash',
-                            contents=[
-                                global_store["question_img"], 
-                                global_store["scheme_img"], 
-                                student_ans_img, 
-                                prompt
-                            ]
-                        )
+                        # List of candidate model names to guarantee a hit
+                        candidate_models = [
+                            'gemini-2.5-flash',
+                            'gemini-1.5-flash-latest',
+                            'gemini-1.5-flash-002',
+                            'gemini-1.5-flash',
+                            'gemini-2.0-flash'
+                        ]
+
+                        response = None
+                        last_exception = None
+
+                        # Try each candidate model until one succeeds
+                        for m_name in candidate_models:
+                            try:
+                                response = client.models.generate_content(
+                                    model=m_name,
+                                    contents=[
+                                        global_store["question_img"], 
+                                        global_store["scheme_img"], 
+                                        student_ans_img, 
+                                        prompt
+                                    ]
+                                )
+                                break
+                            except Exception as e:
+                                last_exception = e
+                                continue
+
+                        if response is None:
+                            raise last_exception
 
                         full_text = response.text
                         score = "Evaluated"
@@ -146,7 +165,6 @@ else:
                             score = parts[0].replace("Score:", "").strip()
                             missing_ideas = parts[1].strip()
 
-                        # Save result directly to shared memory
                         global_store["results"].append({
                             "Student Name": student_name,
                             "Score": score,
