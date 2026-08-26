@@ -33,7 +33,6 @@ if role == "Teacher Control Panel":
     if passcode == "1234":
         st.success("Authenticated")
         
-        # Save API key to global store
         api_input = st.text_input("Gemini API Key", value=global_store["api_key"], type="password")
         if api_input:
             global_store["api_key"] = api_input.strip()
@@ -124,19 +123,15 @@ else:
                         Missing Ideas/Keywords: [Concise 1-2 sentence description of missing or incorrect points]
                         """
 
-                        # List of candidate model names to guarantee a hit
                         candidate_models = [
+                            'gemini-3.6-flash',
                             'gemini-2.5-flash',
-                            'gemini-1.5-flash-latest',
-                            'gemini-1.5-flash-002',
-                            'gemini-1.5-flash',
-                            'gemini-2.0-flash'
+                            'gemini-1.5-flash'
                         ]
 
                         response = None
                         last_exception = None
 
-                        # Try each candidate model until one succeeds
                         for m_name in candidate_models:
                             try:
                                 response = client.models.generate_content(
