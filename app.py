@@ -118,7 +118,7 @@ else:
                         3. Image 3: Student's Handwritten Answer
 
                         Compare Image 3 against Image 1 and Image 2.
-                        Return your evaluation in two distinct sections:
+                        Return your evaluation strictly in two distinct sections formatted as follows:
                         Score: [Numeric mark or fraction]
                         Missing Ideas/Keywords: [Concise 1-2 sentence description of missing or incorrect points]
                         """
@@ -160,13 +160,16 @@ else:
                             score = parts[0].replace("Score:", "").strip()
                             missing_ideas = parts[1].strip()
 
+                        # Append full response to Teacher Grid
                         global_store["results"].append({
                             "Student Name": student_name,
                             "Score": score,
                             "Missing Ideas / Keywords": missing_ideas
                         })
                         
-                        st.success(f"Successfully submitted! Your answer has been evaluated, {student_name}.")
+                        # Display result on Student Screen
+                        st.success(f"Successfully submitted, {student_name}!")
+                        st.metric(label="Your Score", value=score)
 
                 except Exception as e:
                     st.error(f"Submission error: {str(e)}")
