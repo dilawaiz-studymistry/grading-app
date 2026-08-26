@@ -6,8 +6,6 @@ from PIL import Image
 st.set_page_config(page_title="AI Answer Assessment System", layout="wide")
 
 # ==================== SHARED GLOBAL MEMORY ====================
-# Using @st.cache_resource creates a global bridge so that 
-# whatever the teacher uploads is IMMEDIATELY visible to all students.
 @st.cache_resource
 def get_global_store():
     return {
@@ -38,7 +36,7 @@ if role == "Teacher Control Panel":
         # Save API key to global store
         api_input = st.text_input("Gemini API Key", value=global_store["api_key"], type="password")
         if api_input:
-            global_store["api_key"] = api_input
+            global_store["api_key"] = api_input.strip()
         
         col1, col2 = st.columns(2)
         
@@ -90,7 +88,6 @@ if role == "Teacher Control Panel":
 else:
     st.header("📤 Student Answer Submission")
     
-    # Check global store directly
     has_key = bool(global_store["api_key"])
     has_q = global_store["question_img"] is not None
     has_s = global_store["scheme_img"] is not None
@@ -129,8 +126,9 @@ else:
                         Missing Ideas/Keywords: [Concise 1-2 sentence description of missing or incorrect points]
                         """
 
+                        # Updated model name to gemini-1.5-flash
                         response = client.models.generate_content(
-                            model='gemini-2.5-flash',
+                            model='gemini-1.5-flash',
                             contents=[
                                 global_store["question_img"], 
                                 global_store["scheme_img"], 
