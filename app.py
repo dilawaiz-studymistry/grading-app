@@ -112,21 +112,17 @@ else:
                         student_ans_img = Image.open(ans_file)
 
                         prompt = """
-                        You are an accurate exam evaluator. You are provided with 3 images:
-                        1. Image 1: Question
-                        2. Image 2: Official Marking Scheme
-                        3. Image 3: Student's Handwritten Answer
+                        You are an accurate exam evaluator. Compare the student's handwritten answer (Image 3) against the Question (Image 1) and Marking Scheme (Image 2).
 
-                        Compare Image 3 against Image 1 and Image 2.
-                        Return your evaluation strictly in two distinct sections formatted as follows:
-                        Score: [Numeric mark or fraction]
-                        Missing Ideas/Keywords: [Concise 1-2 sentence description of missing or incorrect points]
+                        Return your output strictly formatted with these headers:
+                        Score: [Numeric mark or fraction, e.g. 3/5]
+                        Diagnosis: [Identify specifically what wrong idea or keyword the student wrote AND state what the correct idea/keyword should be in its place. Format it as: "Student wrote '[Wrong Concept/Word]' instead of '[Correct Concept/Word]'." If anything core is completely missing, explicitly state what was omitted.]
                         """
 
                         candidate_models = [
-                            'gemini-3.6-flash',
                             'gemini-2.5-flash',
-                            'gemini-1.5-flash'
+                            'gemini-1.5-flash',
+                            'gemini-3.6-flash'
                         ]
 
                         response = None
@@ -153,21 +149,21 @@ else:
 
                         full_text = response.text
                         score = "Evaluated"
-                        missing_ideas = full_text
+                        diagnosis = full_text
 
-                        if "Score:" in full_text and "Missing Ideas/Keywords:" in full_text:
-                            parts = full_text.split("Missing Ideas/Keywords:")
+                        if "Score:" in full_text and "Diagnosis:" in full_text:
+                            parts = full_text.split("Diagnosis:")
                             score = parts[0].replace("Score:", "").strip()
-                            missing_ideas = parts[1].strip()
+                            diagnosis = parts[1].strip()
 
-                        # Append full response to Teacher Grid
+                        # Append complete detailed diagnosis to Teacher Grid
                         global_store["results"].append({
                             "Student Name": student_name,
                             "Score": score,
-                            "Missing Ideas / Keywords": missing_ideas
+                            "Incorrect Idea/Keyword vs Required Correction": diagnosis
                         })
                         
-                        # Display result on Student Screen
+                        # Display only score on Student Screen
                         st.success(f"Successfully submitted, {student_name}!")
                         st.metric(label="Your Score", value=score)
 
